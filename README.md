@@ -325,14 +325,17 @@ delivery status is in [.claude/status.md](.claude/status.md). Highlights:
 
 ## Contributing
 
-This is an internal repository. External contributions are not accepted.
+Contributions are welcome. If you'd like to help out:
 
-For internal contributors:
+1. Fork the repo and create a feature branch off `main`.
+2. Run `npm install` at the root to set up the workspaces.
+3. Make your change. Keep it focused, one topic per PR.
+4. Run `npm run typecheck` before opening a PR.
+5. Open a pull request with a short description of the change and why.
 
-- Follow the conventions in [.claude/conventions.md](.claude/conventions.md).
-- Record any architectural change in [.claude/decisions.md](.claude/decisions.md)
-  with a date, the decision, the rationale, and a "how to apply" note.
-- Run `npm run typecheck` before opening a PR.
+For larger changes (new modules, schema migrations, anything that touches the
+realtime gateway), please open an issue first so we can talk through the
+approach before you write the code.
 
 ---
 
