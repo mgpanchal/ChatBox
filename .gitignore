@@ -1,0 +1,63 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build artifacts
+.turbo
+.next
+out
+dist
+build
+coverage
+*.tsbuildinfo
+
+# Expo / React Native generated
+.expo
+.expo-shared
+android
+ios
+*.jks
+*.p8
+*.p12
+*.keystore
+*.mobileprovision
+
+# Runtime / uploads
+uploads
+*.sqlite
+*.sqlite3
+*.db
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cer
+secrets/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.example.json
+*.swp
+*.swo
+
+# Misc
+.cache
+.parcel-cache

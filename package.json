@@ -1,0 +1,23 @@
+{
+  "name": "chatbox",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Internal company messaging platform for mobile and web.",
+  "packageManager": "npm@11.5.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "turbo": "^2.0.14",
+    "typescript": "^5.5.4"
+  }
+}

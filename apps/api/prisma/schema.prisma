@@ -1,0 +1,350 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserStatus {
+  invited
+  active
+  deactivated
+}
+
+enum InviteStatus {
+  pending
+  sent
+  accepted
+  expired
+  revoked
+}
+
+enum OtpPurpose {
+  login
+  device_add
+  step_up
+}
+
+enum DevicePlatform {
+  ios
+  android
+  web
+}
+
+enum ConversationKind {
+  direct
+  channel
+  announcement
+}
+
+enum AttachmentKind {
+  image
+  video
+  audio
+  file
+}
+
+enum MessageVisibility {
+  everyone
+  restricted
+}
+
+enum Sensitivity {
+  public
+  internal
+  confidential
+  restricted
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  mobileNumber String     @unique @db.VarChar(16)
+  status       UserStatus @default(invited)
+  isAdmin      Boolean    @default(false)
+  lastSeenAt   DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+
+  profile                EmployeeProfile?
+  invitesCreated         Invite[]              @relation("InviteCreatedBy")
+  otpCodes               OtpCode[]
+  sessions               Session[]
+  devices                Device[]
+  auditEntries           AuditLog[]
+  conversationMemberships ConversationMember[]
+  sentMessages           Message[]             @relation("MessageSender")
+  messageReceipts        MessageReceipt[]
+  messageReactions       MessageReaction[]
+  messageMentions        MessageMention[]
+  attachments            Attachment[]
+  teamMemberships        TeamMember[]
+  messageAudiences       MessageAudienceUser[]
+
+  @@index([status])
+}
+
+model EmployeeProfile {
+  userId          String   @id @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employeeId      String   @unique @db.VarChar(32)
+  displayName     String   @db.VarChar(120)
+  department      String?  @db.VarChar(80)
+  title           String?  @db.VarChar(120)
+  location        String?  @db.VarChar(80)
+  photoStorageKey String?  @db.VarChar(255)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Invite {
+  id           String       @id @default(uuid()) @db.Uuid
+  mobileNumber String       @db.VarChar(16)
+  employeeId   String       @db.VarChar(32)
+  displayName  String       @db.VarChar(120)
+  department   String?      @db.VarChar(80)
+  status       InviteStatus @default(pending)
+  createdById  String?      @db.Uuid
+  createdBy    User?        @relation("InviteCreatedBy", fields: [createdById], references: [id])
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([mobileNumber, status])
+  @@index([status])
+}
+
+model OtpCode {
+  id           String     @id @default(uuid()) @db.Uuid
+  mobileNumber String     @db.VarChar(16)
+  codeHash     String     @db.VarChar(120)
+  purpose      OtpPurpose @default(login)
+  attempts     Int        @default(0)
+  consumedAt   DateTime?
+  expiresAt    DateTime
+  createdAt    DateTime   @default(now())
+  userId       String?    @db.Uuid
+  user         User?      @relation(fields: [userId], references: [id])
+
+  @@index([mobileNumber, expiresAt])
+}
+
+model Session {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId         String    @db.Uuid
+  device           Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  refreshTokenHash String    @unique @db.VarChar(120)
+  refreshFamily    String    @db.Uuid
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  lastUsedAt       DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+
+  @@index([userId])
+  @@index([deviceId])
+}
+
+model Device {
+  id           String         @id @default(uuid()) @db.Uuid
+  userId       String         @db.Uuid
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform     DevicePlatform
+  name         String?        @db.VarChar(120)
+  pushToken    String?        @db.VarChar(255)
+  ipLastOctets String?        @db.VarChar(8)
+  approvedAt   DateTime?
+  revokedAt    DateTime?
+  lastSeenAt   DateTime       @default(now())
+  createdAt    DateTime       @default(now())
+
+  sessions     Session[]
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @db.Uuid
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String   @db.VarChar(64)
+  targetType String?  @db.VarChar(32)
+  targetId   String?
+  metadata   Json?
+  ipAddress  String?  @db.VarChar(45)
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+}
+
+model Conversation {
+  id          String           @id @default(uuid()) @db.Uuid
+  kind        ConversationKind
+  title       String?          @db.VarChar(120)
+  topic       String?          @db.VarChar(240)
+  sensitivity Sensitivity      @default(internal)
+  pinned      Boolean          @default(false)
+  archivedAt  DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  members  ConversationMember[]
+  messages Message[]
+
+  @@index([kind])
+}
+
+model ConversationMember {
+  id             String       @id @default(uuid()) @db.Uuid
+  conversationId String       @db.Uuid
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String       @db.Uuid
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isAdmin        Boolean      @default(false)
+  joinedAt       DateTime     @default(now())
+  lastReadAt     DateTime?
+  mutedUntil     DateTime?
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id               String       @id @default(uuid()) @db.Uuid
+  conversationId   String       @db.Uuid
+  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId         String       @db.Uuid
+  sender           User         @relation("MessageSender", fields: [senderId], references: [id])
+  body             String
+  replyToMessageId String?      @db.Uuid
+  replyTo          Message?     @relation("MessageReply", fields: [replyToMessageId], references: [id], onDelete: SetNull)
+  replies          Message[]    @relation("MessageReply")
+  editedAt         DateTime?
+  deletedAt        DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  receipts      MessageReceipt[]
+  reactions     MessageReaction[]
+  mentions      MessageMention[]
+  attachments   Attachment[]
+  visibility    MessageVisibility       @default(everyone)
+  audienceUsers MessageAudienceUser[]
+  audienceTeams MessageAudienceTeam[]
+  flaggedReasons Json?
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+model Team {
+  id          String       @id @default(uuid()) @db.Uuid
+  slug        String       @unique @db.VarChar(40)
+  name        String       @db.VarChar(80)
+  description String?      @db.VarChar(240)
+  isSystem    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+
+  members   TeamMember[]
+  audiences MessageAudienceTeam[]
+}
+
+model TeamMember {
+  id        String   @id @default(uuid()) @db.Uuid
+  teamId    String   @db.Uuid
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([teamId, userId])
+  @@index([userId])
+}
+
+model MessageAudienceUser {
+  id        String  @id @default(uuid()) @db.Uuid
+  messageId String  @db.Uuid
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String  @db.Uuid
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId])
+}
+
+model MessageAudienceTeam {
+  id        String  @id @default(uuid()) @db.Uuid
+  messageId String  @db.Uuid
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  teamId    String  @db.Uuid
+  team      Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, teamId])
+  @@index([teamId])
+}
+
+model Attachment {
+  id           String         @id @default(uuid()) @db.Uuid
+  uploadedById String         @db.Uuid
+  uploadedBy   User           @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  messageId    String?        @db.Uuid
+  message      Message?       @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  kind         AttachmentKind
+  storageKey   String         @db.VarChar(255)
+  fileName     String         @db.VarChar(255)
+  contentType  String         @db.VarChar(120)
+  size         Int
+  width        Int?
+  height       Int?
+  createdAt    DateTime       @default(now())
+
+  @@index([messageId])
+  @@index([uploadedById, messageId])
+}
+
+model MessageMention {
+  id             String    @id @default(uuid()) @db.Uuid
+  messageId      String    @db.Uuid
+  message        Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId         String    @db.Uuid
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  acknowledgedAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@unique([messageId, userId])
+  @@index([userId, acknowledgedAt])
+}
+
+model MessageReceipt {
+  id          String    @id @default(uuid()) @db.Uuid
+  messageId   String    @db.Uuid
+  message     Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId      String    @db.Uuid
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveredAt DateTime?
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([messageId, userId])
+  @@index([userId, readAt])
+}
+
+model MessageReaction {
+  id        String   @id @default(uuid()) @db.Uuid
+  messageId String   @db.Uuid
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String   @db.VarChar(32)
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+}

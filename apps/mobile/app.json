@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Chatbox",
+    "slug": "chatbox",
+    "version": "0.1.0",
+    "scheme": "chatbox",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.company.chatbox"
+    },
+    "android": {
+      "package": "com.company.chatbox",
+      "softwareKeyboardLayoutMode": "pan"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
