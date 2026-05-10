@@ -58,6 +58,10 @@ Desktop.ini
 *.swp
 *.swo
 
+# Internal AI/agent context
+.claude
+CLAUDE.md
+
 # Misc
 .cache
 .parcel-cache

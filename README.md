@@ -308,8 +308,7 @@ These are not features and won't be built unless the decision is reopened:
 
 ## Roadmap
 
-The MVP feature list is in [.claude/project-overview.md](.claude/project-overview.md);
-delivery status is in [.claude/status.md](.claude/status.md). Highlights:
+Highlights of where we are and where we're headed:
 
 - ✅ Mobile and web at parity for chat, presence, reactions, attachments, mentions
 - ✅ Multi-tenant data model with audit logs and suppressions
