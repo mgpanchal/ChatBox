@@ -297,12 +297,44 @@ These are not features and won't be built unless the decision is reopened:
 
 ## Screenshots
 
-> Drop product screenshots into [`docs/screenshots/`](docs/screenshots) and
-> they will render below.
+### Sign in
 
-| Web, chat thread          | Web, admin dashboard            | Mobile, chat thread        | Mobile, chats list         |
-| ------------------------- | ------------------------------- | -------------------------- | -------------------------- |
-| ![](docs/screenshots/web-chat.png) | ![](docs/screenshots/web-admin.png) | ![](docs/screenshots/mobile-chat.png) | ![](docs/screenshots/mobile-list.png) |
+OTP-based, invite-only login. The dev build shows the code inline so internal
+testers can move quickly without an SMS gateway.
+
+| Sign in (mobile + OTP)                | One-time code entry                |
+| ------------------------------------- | ---------------------------------- |
+| ![Sign in](docs/screenshots/web-login.png) | ![OTP](docs/screenshots/web-otp.png) |
+
+### Chat
+
+Conversation list with pinned channels, unread counts, and presence; thread
+view with sender colours, ticks, deleted-message markers, and inline
+timestamps.
+
+| Chats list                                    | Open thread                          |
+| --------------------------------------------- | ------------------------------------ |
+| ![Chats](docs/screenshots/web-chats-list.png) | ![Thread](docs/screenshots/web-chat.png) |
+
+### Directory, activity, and profile
+
+Searchable employee directory by department, an Activity feed for mentions and
+announcements, and a profile page showing your active devices.
+
+| People directory                          | Activity                              | Your profile                        |
+| ----------------------------------------- | ------------------------------------- | ----------------------------------- |
+| ![People](docs/screenshots/web-people.png) | ![Activity](docs/screenshots/web-activity.png) | ![You](docs/screenshots/web-you.png) |
+
+### Admin
+
+The admin dashboard surfaces invite lifecycle, audit log, channel governance,
+flagged messages, and login analytics.
+
+![Admin](docs/screenshots/web-admin.png)
+
+> Mobile (iOS / Android) screenshots are TBD. Drop them into
+> [`docs/screenshots/`](docs/screenshots) as `mobile-chat.png` and
+> `mobile-list.png` and they'll render alongside the web shots.
 
 ---
 
